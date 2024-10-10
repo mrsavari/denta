@@ -5,7 +5,7 @@ namespace DentalLab.Common.Models
 {
     public class Appointment : Record
     {
-        public string PatientId { get; set; }
+        public Thing PatientId { get; set; }
         public DateTime AppointmentDate { get; set; }
         public TimeSpan Duration { get; set; }
         public string Status { get; set; }

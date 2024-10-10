@@ -5,7 +5,7 @@ namespace DentalLab.Common.Models
 {
     public class Treatment : Record
     {
-        public string PatientId { get; set; }
+        public Thing PatientId { get; set; }
         public string TreatmentType { get; set; }
         public DateTime TreatmentDate { get; set; }
         public string Notes { get; set; }
