@@ -10,6 +10,7 @@ namespace DentalLab.API.Controllers
     [Route("api/[controller]")]
     public class AppointmentsController : ControllerBase
     {
+        internal const string Table = "appointment";
         private readonly ISurrealDbClient _dbClient;
 
         public AppointmentsController(ISurrealDbClient dbClient)
@@ -18,49 +19,79 @@ namespace DentalLab.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public Task<IEnumerable<WeatherForecast>> GetAll(CancellationToken cancellationToken)
         {
-            var appointments = await _dbClient.Select<Appointment>("appointment");
-            return Ok(appointments);
+            return _surrealDbClient.Select<WeatherForecast>(Table, cancellationToken);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> Get(string id, CancellationToken cancellationToken)
         {
-            var appointment = await _dbClient.Select<Appointment>($"appointment:{id}");
-            if (appointment == null)
+            var weatherForecast = await _surrealDbClient.Select<WeatherForecast>(
+                (Table, id),
+                cancellationToken
+            );
+
+            if (weatherForecast is null)
                 return NotFound();
-            return Ok(appointment);
+
+            return Ok(weatherForecast);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Appointment appointment)
+        public Task<WeatherForecast> Create(
+            CreateWeatherForecast data,
+            CancellationToken cancellationToken
+        )
         {
-            var createdAppointment = await _dbClient.Create("appointment", appointment);
-            return CreatedAtAction(nameof(GetById), new { id = createdAppointment.Id }, createdAppointment);
+            var weatherForecast = new WeatherForecast
+            {
+                Date = data.Date,
+                Country = data.Country,
+                TemperatureC = data.TemperatureC,
+                Summary = data.Summary
+            };
+
+            return _surrealDbClient.Create(Table, weatherForecast, cancellationToken);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, Appointment appointment)
+        [HttpPut]
+        public Task<WeatherForecast> Update(WeatherForecast data, CancellationToken cancellationToken)
         {
-            if (id != appointment.Id)
-                return BadRequest();
+            return _surrealDbClient.Upsert(data, cancellationToken);
+        }
 
-            var updatedAppointment = await _dbClient.Upsert(appointment);
-            if (updatedAppointment == null)
-                return NotFound();
+        [HttpPatch]
+        public Task<IEnumerable<WeatherForecast>> PatchAll(
+            JsonPatchDocument<WeatherForecast> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _surrealDbClient.PatchAll(Table, patches, cancellationToken);
+        }
 
-            return NoContent();
+        /// <summary>
+        /// Patches an existing weather forecast.
+        /// </summary>
+        [HttpPatch("{id}")]
+        public Task<WeatherForecast> Patch(
+            string id,
+            JsonPatchDocument<WeatherForecast> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _surrealDbClient.Patch((Table, id), patches, cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
         {
-            var result = await _dbClient.Delete($"appointment:{id}");
-            if (!result)
+            bool success = await _surrealDbClient.Delete((Table, id), cancellationToken);
+
+            if (!success)
                 return NotFound();
 
-            return NoContent();
+            return Ok();
         }
     }
 }
