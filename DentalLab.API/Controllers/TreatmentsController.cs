@@ -47,7 +47,7 @@ namespace DentalLab.API.Controllers
             if (id != treatment.Id)
                 return BadRequest();
 
-            var updatedTreatment = await _dbClient.Update($"treatment:{id}", treatment);
+            var updatedTreatment = await _dbClient.Upsert(treatment);
             if (updatedTreatment == null)
                 return NotFound();
 

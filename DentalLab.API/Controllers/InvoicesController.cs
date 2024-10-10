@@ -46,7 +46,7 @@ namespace DentalLab.API.Controllers
             if (id != invoice.Id)
                 return BadRequest();
 
-            var updatedInvoice = await _dbClient.Update($"invoice:{id}", invoice);
+            var updatedInvoice = await _dbClient.Upsert(invoice);
             if (updatedInvoice == null)
                 return NotFound();
 

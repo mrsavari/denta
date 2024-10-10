@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="..\Lib\*.dll" />
+  </ItemGroup>
+
 </Project>
