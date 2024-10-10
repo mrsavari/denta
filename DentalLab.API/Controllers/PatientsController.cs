@@ -3,6 +3,8 @@ using DentalLab.Common.Models;
 using SurrealDb.Net;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using SystemTextJsonPatch;
 
 namespace DentalLab.API.Controllers
 {
@@ -10,6 +12,7 @@ namespace DentalLab.API.Controllers
     [Route("api/[controller]")]
     public class PatientsController : ControllerBase
     {
+        internal const string Table = "patient";
         private readonly ISurrealDbClient _dbClient;
 
         public PatientsController(ISurrealDbClient dbClient)
@@ -18,50 +21,62 @@ namespace DentalLab.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public Task<IEnumerable<Patient>> GetAll(CancellationToken cancellationToken)
         {
-            var patients = await _dbClient.Select<Patient>("patient");
-            return Ok(patients);
+            return _dbClient.Select<Patient>(Table, cancellationToken);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> Get(string id, CancellationToken cancellationToken)
         {
-            var patient = await _dbClient.Select<Patient>($"patient:{id}");
-            if (patient == null)
+            var patient = await _dbClient.Select<Patient>((Table, id), cancellationToken);
+
+            if (patient is null)
                 return NotFound();
+
             return Ok(patient);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Patient patient)
+        public Task<Patient> Create(Patient data, CancellationToken cancellationToken)
         {
-            patient.Id = Guid.NewGuid();
-            var createdPatient = await _dbClient.Create("patient", patient);
-            return CreatedAtAction(nameof(GetById), new { id = createdPatient.Id }, createdPatient);
+            return _dbClient.Create(Table, data, cancellationToken);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, Patient patient)
+        [HttpPut]
+        public Task<Patient> Update(Patient data, CancellationToken cancellationToken)
         {
-            if (id != patient.Id)
-                return BadRequest();
+            return _dbClient.Upsert(data, cancellationToken);
+        }
 
-            var updatedPatient = await _dbClient.Upsert(patient);
-            if (updatedPatient == null)
-                return NotFound();
+        [HttpPatch]
+        public Task<IEnumerable<Patient>> PatchAll(
+            JsonPatchDocument<Patient> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _dbClient.PatchAll(Table, patches, cancellationToken);
+        }
 
-            return NoContent();
+        [HttpPatch("{id}")]
+        public Task<Patient> Patch(
+            string id,
+            JsonPatchDocument<Patient> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _dbClient.Patch((Table, id), patches, cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
         {
-            var result = await _dbClient.Delete($"patient:{id}");
-            if (!result)
+            bool success = await _dbClient.Delete((Table, id), cancellationToken);
+
+            if (!success)
                 return NotFound();
 
-            return NoContent();
+            return Ok();
         }
     }
 }

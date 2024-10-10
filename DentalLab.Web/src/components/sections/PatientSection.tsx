@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
-import { useToast } from "../ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 interface Patient {
   id: string

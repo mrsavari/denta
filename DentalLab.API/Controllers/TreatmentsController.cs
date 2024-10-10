@@ -3,6 +3,8 @@ using DentalLab.Common.Models;
 using SurrealDb.Net;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using SystemTextJsonPatch;
 
 namespace DentalLab.API.Controllers
 {
@@ -10,6 +12,7 @@ namespace DentalLab.API.Controllers
     [Route("api/[controller]")]
     public class TreatmentsController : ControllerBase
     {
+        internal const string Table = "treatment";
         private readonly ISurrealDbClient _dbClient;
 
         public TreatmentsController(ISurrealDbClient dbClient)
@@ -18,50 +21,62 @@ namespace DentalLab.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public Task<IEnumerable<Treatment>> GetAll(CancellationToken cancellationToken)
         {
-            var treatments = await _dbClient.Select<Treatment>("treatment");
-            return Ok(treatments);
+            return _dbClient.Select<Treatment>(Table, cancellationToken);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> Get(string id, CancellationToken cancellationToken)
         {
-            var treatment = await _dbClient.Select<Treatment>($"treatment:{id}");
-            if (treatment == null)
+            var treatment = await _dbClient.Select<Treatment>((Table, id), cancellationToken);
+
+            if (treatment is null)
                 return NotFound();
+
             return Ok(treatment);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Treatment treatment)
+        public Task<Treatment> Create(Treatment data, CancellationToken cancellationToken)
         {
-            treatment.Id = Guid.NewGuid();
-            var createdTreatment = await _dbClient.Create("treatment", treatment);
-            return CreatedAtAction(nameof(GetById), new { id = createdTreatment.Id }, createdTreatment);
+            return _dbClient.Create(Table, data, cancellationToken);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, Treatment treatment)
+        [HttpPut]
+        public Task<Treatment> Update(Treatment data, CancellationToken cancellationToken)
         {
-            if (id != treatment.Id)
-                return BadRequest();
+            return _dbClient.Upsert(data, cancellationToken);
+        }
 
-            var updatedTreatment = await _dbClient.Upsert(treatment);
-            if (updatedTreatment == null)
-                return NotFound();
+        [HttpPatch]
+        public Task<IEnumerable<Treatment>> PatchAll(
+            JsonPatchDocument<Treatment> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _dbClient.PatchAll(Table, patches, cancellationToken);
+        }
 
-            return NoContent();
+        [HttpPatch("{id}")]
+        public Task<Treatment> Patch(
+            string id,
+            JsonPatchDocument<Treatment> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _dbClient.Patch((Table, id), patches, cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
         {
-            var result = await _dbClient.Delete($"treatment:{id}");
-            if (!result)
+            bool success = await _dbClient.Delete((Table, id), cancellationToken);
+
+            if (!success)
                 return NotFound();
 
-            return NoContent();
+            return Ok();
         }
     }
 }

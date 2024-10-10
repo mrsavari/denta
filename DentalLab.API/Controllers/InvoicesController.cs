@@ -3,6 +3,8 @@ using DentalLab.Common.Models;
 using SurrealDb.Net;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using SystemTextJsonPatch;
 
 namespace DentalLab.API.Controllers
 {
@@ -10,6 +12,7 @@ namespace DentalLab.API.Controllers
     [Route("api/[controller]")]
     public class InvoicesController : ControllerBase
     {
+        internal const string Table = "invoice";
         private readonly ISurrealDbClient _dbClient;
 
         public InvoicesController(ISurrealDbClient dbClient)
@@ -18,49 +21,62 @@ namespace DentalLab.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public Task<IEnumerable<Invoice>> GetAll(CancellationToken cancellationToken)
         {
-            var invoices = await _dbClient.Select<Invoice>("invoice");
-            return Ok(invoices);
+            return _dbClient.Select<Invoice>(Table, cancellationToken);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> Get(string id, CancellationToken cancellationToken)
         {
-            var invoice = await _dbClient.Select<Invoice>($"invoice:{id}");
-            if (invoice == null)
+            var invoice = await _dbClient.Select<Invoice>((Table, id), cancellationToken);
+
+            if (invoice is null)
                 return NotFound();
+
             return Ok(invoice);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Invoice invoice)
+        public Task<Invoice> Create(Invoice data, CancellationToken cancellationToken)
         {
-            var createdInvoice = await _dbClient.Create("invoice", invoice);
-            return CreatedAtAction(nameof(GetById), new { id = createdInvoice.Id }, createdInvoice);
+            return _dbClient.Create(Table, data, cancellationToken);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, Invoice invoice)
+        [HttpPut]
+        public Task<Invoice> Update(Invoice data, CancellationToken cancellationToken)
         {
-            if (id != invoice.Id)
-                return BadRequest();
+            return _dbClient.Upsert(data, cancellationToken);
+        }
 
-            var updatedInvoice = await _dbClient.Upsert(invoice);
-            if (updatedInvoice == null)
-                return NotFound();
+        [HttpPatch]
+        public Task<IEnumerable<Invoice>> PatchAll(
+            JsonPatchDocument<Invoice> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _dbClient.PatchAll(Table, patches, cancellationToken);
+        }
 
-            return NoContent();
+        [HttpPatch("{id}")]
+        public Task<Invoice> Patch(
+            string id,
+            JsonPatchDocument<Invoice> patches,
+            CancellationToken cancellationToken
+        )
+        {
+            return _dbClient.Patch((Table, id), patches, cancellationToken);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
         {
-            var result = await _dbClient.Delete($"invoice:{id}");
-            if (!result)
+            bool success = await _dbClient.Delete((Table, id), cancellationToken);
+
+            if (!success)
                 return NotFound();
 
-            return NoContent();
+            return Ok();
         }
     }
 }

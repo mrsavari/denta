@@ -3,6 +3,7 @@ using DentalLab.Common.Models;
 using SurrealDb.Net;
 using System;
 using System.Threading.Tasks;
+using SystemTextJsonPatch;
 
 namespace DentalLab.API.Controllers
 {
@@ -19,15 +20,15 @@ namespace DentalLab.API.Controllers
         }
 
         [HttpGet]
-        public Task<IEnumerable<WeatherForecast>> GetAll(CancellationToken cancellationToken)
+        public Task<IEnumerable<Appointment>> GetAll(CancellationToken cancellationToken)
         {
-            return _surrealDbClient.Select<WeatherForecast>(Table, cancellationToken);
+            return _dbClient.Select<Appointment>(Table, cancellationToken);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id, CancellationToken cancellationToken)
         {
-            var weatherForecast = await _surrealDbClient.Select<WeatherForecast>(
+            var weatherForecast = await _dbClient.Select<Appointment>(
                 (Table, id),
                 cancellationToken
             );
@@ -37,56 +38,44 @@ namespace DentalLab.API.Controllers
 
             return Ok(weatherForecast);
         }
-
         [HttpPost]
-        public Task<WeatherForecast> Create(
-            CreateWeatherForecast data,
-            CancellationToken cancellationToken
-        )
+        public Task<Appointment> Create(Appointment data, CancellationToken cancellationToken)
         {
-            var weatherForecast = new WeatherForecast
-            {
-                Date = data.Date,
-                Country = data.Country,
-                TemperatureC = data.TemperatureC,
-                Summary = data.Summary
-            };
-
-            return _surrealDbClient.Create(Table, weatherForecast, cancellationToken);
+            return _dbClient.Create(Table, data, cancellationToken);
         }
 
         [HttpPut]
-        public Task<WeatherForecast> Update(WeatherForecast data, CancellationToken cancellationToken)
+        public Task<Appointment> Update(Appointment data, CancellationToken cancellationToken)
         {
-            return _surrealDbClient.Upsert(data, cancellationToken);
+            return _dbClient.Upsert(data, cancellationToken);
         }
 
         [HttpPatch]
-        public Task<IEnumerable<WeatherForecast>> PatchAll(
-            JsonPatchDocument<WeatherForecast> patches,
+        public Task<IEnumerable<Appointment>> PatchAll(
+            JsonPatchDocument<Appointment> patches,
             CancellationToken cancellationToken
         )
         {
-            return _surrealDbClient.PatchAll(Table, patches, cancellationToken);
+            return _dbClient.PatchAll(Table, patches, cancellationToken);
         }
 
         /// <summary>
         /// Patches an existing weather forecast.
         /// </summary>
         [HttpPatch("{id}")]
-        public Task<WeatherForecast> Patch(
+        public Task<Appointment> Patch(
             string id,
-            JsonPatchDocument<WeatherForecast> patches,
+            JsonPatchDocument<Appointment> patches,
             CancellationToken cancellationToken
         )
         {
-            return _surrealDbClient.Patch((Table, id), patches, cancellationToken);
+            return _dbClient.Patch((Table, id), patches, cancellationToken);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id, CancellationToken cancellationToken)
         {
-            bool success = await _surrealDbClient.Delete((Table, id), cancellationToken);
+            bool success = await _dbClient.Delete((Table, id), cancellationToken);
 
             if (!success)
                 return NotFound();
