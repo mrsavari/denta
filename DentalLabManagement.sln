@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DentalLab.Common", "DentalLab.Common\DentalLab.Common.csproj", "{08DD86E1-C876-4889-A404-120B1020D4BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DentalLab.API", "DentalLab.API\DentalLab.API.csproj", "{792A18C8-B649-4A61-BB15-6449D6B02CC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DentalLab.Desktop", "DentalLab.Desktop\DentalLab.Desktop.csproj", "{D83E40BC-DCC1-435E-BD1A-E4CA6C46AABC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08DD86E1-C876-4889-A404-120B1020D4BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08DD86E1-C876-4889-A404-120B1020D4BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08DD86E1-C876-4889-A404-120B1020D4BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08DD86E1-C876-4889-A404-120B1020D4BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{792A18C8-B649-4A61-BB15-6449D6B02CC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{792A18C8-B649-4A61-BB15-6449D6B02CC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{792A18C8-B649-4A61-BB15-6449D6B02CC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{792A18C8-B649-4A61-BB15-6449D6B02CC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D83E40BC-DCC1-435E-BD1A-E4CA6C46AABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D83E40BC-DCC1-435E-BD1A-E4CA6C46AABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D83E40BC-DCC1-435E-BD1A-E4CA6C46AABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D83E40BC-DCC1-435E-BD1A-E4CA6C46AABC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
